@@ -1,5 +1,5 @@
 PROJECT=not_a_drone_ctrl
-OBJECTS=$(wildcard *.c)
+OBJECTS=$(patsubst %.c,%.o,$(wildcard *.c))
 
 PREFIX		= msp430-elf-
 CC      	= $(PREFIX)gcc
@@ -14,6 +14,7 @@ CFLAGS = -mmcu=$(DEVICE) -O2
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 all: $(OBJECTS)
+	@echo $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o $(PROJECT).out
 	$(SIZE) $(PROJECT).out
 
