@@ -1,6 +1,9 @@
-#include <stdint.h>
+/**
+ ** UART utilities
+ **/
 
-void uart_init(void);
-void uart_putc(char c);
-void uart_puts(char *s);
-void uart_puti(int16_t i, uint16_t base);
+void uartInit ();
+
+void putc (unsigned char c);
+void puts (const char *tx_message);
+

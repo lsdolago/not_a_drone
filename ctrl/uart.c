@@ -1,56 +1,48 @@
+/** LEGAL NOTICE:
+ **
+ ** Nathan Zimmerman
+ ** Hardware_UART
+ ** 1/7/12
+ **
+ ** Based on Nathan Zimmerman's code at http://www.43oh.com/forum/viewtopic.php?f=10&p=15345#p15345
+ ** Adapted by Lars Roland
+ **/
+
 #include <msp430.h>
-#include <stdint.h>
 #include "uart.h"
 
-static void xtoa(int value, char* result, int base){
-	// check that the base if valid
-	if (base < 2 || base > 36){
-		*result = '\0';
-	}
+void uartInit (void)
+{
+    BCSCTL1 = CALBC1_1MHZ;            // Set DCO to 1MHz
+    DCOCTL = CALDCO_1MHZ;   
+    
+    ////////////////USCI setup////////////////
+    
+    P1SEL = BIT1 + BIT2;            // Set P1.1 to RXD and P1.2 to TXD
+    P1SEL2 = BIT1 + BIT2;            //
 
-	char* ptr = result, *ptr1 = result, tmp_char;
-	int tmp_value;
+    UCA0CTL1 |= UCSSEL_2;            // Have USCI use SMCLK AKA 1MHz main CLK
+    UCA0BR0 = 104;                  // Baud: 9600, N= CLK/Baud, N= 10^6 / 9600
+    UCA0BR1 = 0;                  // Set upper half of baud select to 0 
+    UCA0MCTL = UCBRS_1;               // Modulation UCBRSx = 1
+    UCA0CTL1 &= ~UCSWRST;             // Start USCI
 
-	do {
-		tmp_value = value;
-		value /= base;
-		*ptr++ = "zyxwvutsrqponmlkjihgfedcba9876543210123456789abcdefghijklmnopqrstuvwxyz"
-			[35 + (tmp_value - value * base)];
-	} while(value);
+    IFG2 &= ~UCA0RXIFG;
+    IE2 |= UCA0RXIE;
+} 
 
-	// Apply negative sign
-	if (tmp_value < 0) *ptr++ = '-';
-	*ptr-- = '\0';
-	while(ptr1 < ptr) {
-		tmp_char = *ptr;
-		*ptr--= *ptr1;
-		*ptr1++ = tmp_char;
-	}
-}
-
-void uart_init(void){
-	P1SEL |= BIT1 + BIT2 ;                     // P1.1 = RXD, P1.2=TXD
-	P1SEL2 |= BIT1 + BIT2 ;                    // P1.1 = RXD, P1.2=TXD
-	UCA0CTL1 |= UCSSEL_2;                     // SMCLK
-	UCA0BR0 = 0x68;                            // 1MHz 9600
-	UCA0BR1 = 0x00;                              // 1MHz 9600
-	UCA0MCTL = UCBRS0;                        // Modulation UCBRSx = 1
-	UCA0CTL1 &= ~UCSWRST;                     // **Initialize USCI state machine**
-}
-
-void uart_putc(char c){
+void putc(unsigned char c)
+{
 	while(!(IFG2&UCA0TXIFG));
-	UCA0TXBUF = c;
+    UCA0TXBUF = c; // write c to TX buffer
+    //__delay_cycles(10000); //transmission delay
 }
 
-void uart_puts(char *s){
-	while(*s != '\0'){
-		uart_putc(*s++);
+void puts (const char *tx_message)
+{
+	while(*tx_message != '\0'){
+		while(!(IFG2&UCA0TXIFG));
+		UCA0TXBUF = *tx_message++; // write c to TX buffer
 	}
-}
+} 
 
-void uart_puti(int16_t i, uint16_t base){
-	char str[7];
-	xtoa(i, str, base);
-	uart_puts(str);
-}
