@@ -2,8 +2,8 @@ DIAMETER_PROPELLER = 31;
 DIAMETER_MOTOR = 8;
 LAUNCHPAD_WIDTH = 53;
 LAUNCHPAD_DEPTH = 69;
-THICKNESS = 4;
-HEIGHT = 15;
+THICKNESS = 2;
+HEIGHT = 10;
 
 module propellerProtection(){
 	/* general height */

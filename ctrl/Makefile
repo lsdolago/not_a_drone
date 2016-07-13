@@ -14,7 +14,6 @@ CFLAGS = -mmcu=$(DEVICE) -O2
 	$(CC) -c $(CFLAGS) -o $@ $<
 
 all: $(OBJECTS)
-	@echo $(OBJECTS)
 	$(CC) $(CFLAGS) $(OBJECTS) -o $(PROJECT).out
 	$(SIZE) $(PROJECT).out
 
